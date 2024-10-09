@@ -9,9 +9,12 @@ class IsLibrarian(BasePermission):
     """
 
     def has_permission(self, request, view):
+        print(request)
 
-        if request.user == None:
-            return False
-        # Check if the user is a librarian
-        user = User.objects.get(id=request.user[1]['user_id']).to_dict()
-        return user['role'] == User.Role.LIBRARIAN
+        print(request.user)
+
+        if request.user[1]['user_id']:
+            # Check if the user is a librarian
+            user = User.objects.get(id=request.user[1]['user_id']).to_dict()
+            return user['role'] == User.Role.LIBRARIAN
+        return False
