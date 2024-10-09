@@ -3,9 +3,10 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from books.models import Book, BookRecord
 from users.models import User
-from books.serializers import BookSerializer, BookRecordSerializer
+from books.serializers import BookSerializer, BookRecordSerializer, BookUpdateSerializer
+from users.serializers import UserSerializer
 from books.permissions import IsLibrarian
-from datetime import timezone
+from datetime import datetime, timezone
 from django.shortcuts import render
 # Create your views here.
 
@@ -46,20 +47,34 @@ def get_book(request, id):
         return Response("Book not found in library", status=status.HTTP_404_NOT_FOUND)
 
 
-@api_view(["PUT"])
+@api_view(["PATCH"])
 @permission_classes([IsLibrarian])
 def update_book(request, id):
     try:
         book = Book.objects.get(id=id)
-        serializer = BookSerializer(book, data=request.data)
+        print("book:", book)
 
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # Get the fields from the request and update them if present
+        if 'title' in request.data:
+            book.title = request.data.get('title')
+        if 'author' in request.data:
+            book.author = request.data.get('author')
+        if 'category' in request.data:
+            book.category = request.data.get('category')
+        if 'description' in request.data:
+            book.description = request.data.get('description')
+        if 'isbn' in request.data:
+            book.isbn = request.data.get('isbn')
+        if 'status' in request.data:
+            book.status = request.data.get('status')
+
+        # Save the updated book instance
+        book.save()
+
+        return Response("Book updated successfully", status=status.HTTP_200_OK)
 
     except Book.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+        return Response({"error": "Book not found"}, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(["DELETE"])
@@ -73,7 +88,7 @@ def remove_book(request, id):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 
-@api_view(['GET'])
+# @api_view(['GET'])
 @permission_classes([IsLibrarian])
 def view_all_members_records():
     try:
@@ -85,11 +100,12 @@ def view_all_members_records():
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 # Member related operations
 
 
 @api_view(['POST'])
-def borrow_books(request):
+def borrow_book(request):
     # get the user id and book id for creating a book record of BORROWED status
     member_id = request.data.get('user_id')
     book_id = request.data.get('book_id')
@@ -111,14 +127,14 @@ def borrow_books(request):
             book=book,
             member=member,
             action_type=BookRecord.Status.BORROWED,
-            issue_date=timezone.now(),
+            issue_date=datetime.now(timezone.utc),
             return_date=return_date
         )
 
         book.status = Book.Status.BORROWED
         book.save()
 
-        return Response({"message": "Book borrowed successfully", "book_record": BookRecordSerializer(book_record).data}, status=status.HTTP_201_CREATED),
+        return Response({"message": "Book borrowed successfully", "book_record": book_record}, status=status.HTTP_201_CREATED),
 
     except User.DoesNotExist:
         return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
@@ -183,3 +199,35 @@ def get_past_records(request):
 
     except Exception as error:
         return Response(f"Error while fetching all records: {str(error)}", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+### Template Views ###
+
+# def add_book_in_library(request):
+#     return render(request, 'add_book.html')
+@permission_classes([IsLibrarian])
+def librarian_home(request):
+    try:
+        books = Book.objects.all()
+        book_serializer = BookSerializer(books, many=True)
+
+        members = User.objects.filter(role=User.Role.MEMBER)
+        member_serializer = UserSerializer(members, many=True)
+
+        records = BookRecord.objects.all()
+        record_serializer = BookRecordSerializer(records, many=True)
+
+    except Book.DoesNotExist:
+        return Response("No Books found in library", status=status.HTTP_404_NOT_FOUND)
+
+    except User.DoesNotExist:
+        return Response("No Members are added in library", status=status.HTTP_404_NOT_FOUND)
+
+    except BookRecord.DoesNotExist:
+        return Response("No Records found in library", status=status.HTTP_404_NOT_FOUND)
+
+    return render(request, 'librarian.html', context={"books": book_serializer.data, "members": member_serializer.data, "records": record_serializer.data})
+
+
+def member_home(request):
+    return render(request, 'member.html')
