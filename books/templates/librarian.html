@@ -1,0 +1,162 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Librarian Dashboard</title>
+    <link rel="stylesheet" href="{% static '/css/librarian.css' %}" />
+  </head>
+  <body>
+    <header>
+      <h1>Librarian Dashboard</h1>
+    </header>
+
+    {% block content %}
+    <section class="books-section">
+      <h2>All Books</h2>
+      <a href="javascript:void(0);" onclick="openAddBookModal()"
+        >Add New Book</a
+      >
+      <div class="book-list">
+        <!-- Placeholder for displaying books -->
+        {% for book in books %}
+        <div class="book-card">
+          <h3>{{ book.title }}</h3>
+          <p>Author: {{ book.author }}</p>
+          <p>Status: {{ book.status }}</p>
+          <button onclick="openUpdateModal({{ book.id }})">Update</button>
+          <button onclick="confirmDelete({{ book.id }})">Delete</button>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="members-section">
+      <h2>All Members</h2>
+      <a href="{% url 'users:add_member' %}">Add New Member</a>
+      <a
+        href="javascript:void(0);"
+        onclick="openMemberHistoryModal({{records}})"
+        >View Member History</a
+      >
+
+      <!-- Link to add a new member -->
+      <div class="member-list">
+        <!-- Placeholder for displaying members -->
+        {% for member in members %}
+        <div class="member-card">
+          <h3>{{ member.first_name }} {{ member.last_name }}</h3>
+          <p>Email: {{ member.email }}</p>
+          <button onclick="openMemberUpdateModal({{ member.id }})">
+            Update
+          </button>
+          <button onclick="confirmMemberDelete({{ member.id }})">Delete</button>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Update Book Modal -->
+    <div id="updateBookModal" style="display: none">
+      <!-- Modal content for updating a book -->
+      <h2>Update Book</h2>
+      <form id="updateBookForm" onSubmit="{updateBookData(event)}">
+        {% csrf_token %}
+
+        <input type="hidden" id="bookId" name="bookId" />
+        <label for="bookTitle">Title:</label>
+        <input type="text" id="bookTitle" name="bookTitle" /><br />
+        <label for="bookAuthor">Author:</label>
+        <input type="text" id="bookAuthor" name="bookAuthor" /><br />
+        <label for="bookCategory">Category:</label>
+        <input type="text" id="bookCategory" name="bookCategory" /><br />
+        <label for="bookDescription">Description:</label>
+        <input type="text" id="bookDescription" name="bookDescription" /><br />
+        <label for="bookISBN">ISBN:</label>
+        <input type="text" id="bookISBN" name="bookISBN" /><br />
+        <label for="bookStatus">Status:</label>
+        <input type="text" id="bookStatus" name="bookStatus" /><br />
+        <button type="submit">Update</button>
+      </form>
+      <button onclick="closeUpdateModal()">Close</button>
+    </div>
+
+    <!-- Member History Modal -->
+    <div id="memberHistoryModal" class="modal">
+      <div class="modal-content">
+        <span class="close-button" onclick="closeMemberHistoryModal()"
+          >&times;</span
+        >
+        <h2>Member History</h2>
+        <div id="memberHistoryContent">
+          <!-- Member history will be dynamically populated here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Add New Book Modal -->
+    <div id="addBookModal" class="modal">
+      <div class="modal-content">
+        <span class="close-button" onclick="closeAddBookModal()">&times;</span>
+        <h2>Add New Book</h2>
+        <form id="addBookForm" onsubmit="addNewBook(event)">
+          {% csrf_token %}
+          <label for="newBookTitle">Title:</label>
+          <input
+            type="text"
+            id="newBookTitle"
+            name="newBookTitle"
+            required
+          /><br />
+
+          <label for="newBookAuthor">Author:</label>
+          <input
+            type="text"
+            id="newBookAuthor"
+            name="newBookAuthor"
+            required
+          /><br />
+
+          <label for="newBookCategory">Category:</label>
+          <input
+            type="text"
+            id="newBookCategory"
+            name="newBookCategory"
+          /><br />
+
+          <label for="newBookDescription">Description:</label>
+          <input
+            type="text"
+            id="newBookDescription"
+            name="newBookDescription"
+          /><br />
+
+          <label for="newBookISBN">ISBN:</label>
+          <input
+            type="text"
+            id="newBookISBN"
+            name="newBookISBN"
+            required
+          /><br />
+
+          <label for="newBookStatus">Status:</label>
+          <input type="text" id="newBookStatus" name="newBookStatus" /><br />
+
+          <button type="submit">Add Book</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Confirmation Modal for Deleting Member -->
+    <div id="confirmDeleteModal" style="display: none">
+      <h2>Are you sure you want to delete this member?</h2>
+      <button id="confirmDeleteButton">Yes, Delete</button>
+      <button onclick="closeConfirmDeleteModal()">Cancel</button>
+    </div>
+    {% endblock %}
+
+    <script src="{% static 'js/librarian.js' %}"></script>
+  </body>
+</html>
