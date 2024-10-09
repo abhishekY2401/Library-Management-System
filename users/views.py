@@ -1,15 +1,25 @@
+
+import jwt
+import json
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
-from users.serializers import UserSignupSerializer, LoginSerializer
+from users.serializers import UserSignupSerializer, LoginSerializer, UserUpdateSerializer
 import logging
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from django.conf import settings
+from datetime import datetime, timezone, timedelta
+from books.permissions import IsLibrarian
+from users.models import User
+
 # Create your views here.
 
 logger = logging.getLogger(__name__)
 
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def register_user(request):
     try:
         logging.info("starting to extract user data in serializer..")
@@ -29,6 +39,7 @@ def register_user(request):
 
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def login_user(request):
     try:
         # Instantiate the serializer with the request data
@@ -37,6 +48,16 @@ def login_user(request):
         # Check if the serializer is valid
         if serializer.is_valid():
             user = serializer.validated_data['user']
+            print("id: ", user.id)
+            # payload = {
+            #     'id': user.id,
+            #     'exp': datetime.now(timezone.utc) + timedelta(hours=1)
+            # }
+            # jwt_token = jwt.encode(payload, settings.SECRET_KEY)
+
+            # return Response({
+            #     'access_token': jwt_token,
+            # }, status=status.HTTP_200_OK)
             refresh = RefreshToken.for_user(user)
 
             return Response({
@@ -49,3 +70,89 @@ def login_user(request):
     except Exception as error:
         logging.error(f"Error while authenticating user: {error}")
         return Response({'error': 'An unexpected error occurred.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def logout_user(request):
+    try:
+        refresh_token = request.data["refresh"]
+        token = RefreshToken(refresh_token)
+        token.blacklist()
+        return Response(status=status.HTTP_205_RESET_CONTENT)
+    except Exception as e:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([IsLibrarian])
+def add_member(request):
+    try:
+        # extract member data from the request object
+        data = request.data
+
+        user_data = {
+            'email': data['email'],
+            'first_name': data['first_name'],
+            'last_name': data['last_name'],
+            'password': data['password'],
+            'role': 'MEMBER'
+        }
+
+        serializer = UserSignupSerializer(data=user_data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    except Exception as error:
+        print("error while creating member: ", error)
+        return Response(error, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['PUT'])
+@permission_classes([IsLibrarian])
+def update_member(request, id):
+    try:
+        member = User.objects.get(id=id).to_dict()
+        if not member:
+            return Response("Member not found", status=status.HTTP_404_NOT_FOUND)
+
+        if member['role'] != User.Role.MEMBER:
+            return Response("Only members details can be updated", status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = UserUpdateSerializer(
+            member, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    except Exception as error:
+        return Response(error, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsLibrarian])
+def remove_member(request):
+    """
+    Function to remove a member from the system.
+    Only librarians are allowed to delete members.
+    """
+    try:
+        member = User.objects.get(id=id).to_dict()
+        if not member:
+            return Response("Member not found", status=status.HTTP_404_NOT_FOUND)
+
+        if member['role'] != User.Role.MEMBER:
+            return Response("Only members can be removed", status=status.HTTP_400_BAD_REQUEST)
+
+        # delete the member if all above conditions satisfies
+        member.delete()
+        return Response({"message": "Member removed successfully."}, status=status.HTTP_204_NO_CONTENT)
+
+    except Exception as error:
+        return Response(error, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -8,15 +8,14 @@ class UserSignupSerializer(serializers.ModelSerializer):
     # define all the user fields to validate the user data
     email = serializers.EmailField(max_length=255)
     first_name = serializers.CharField(max_length=50)
-    first_name = serializers.CharField(max_length=50)
+    last_name = serializers.CharField(max_length=50)
     password = serializers.CharField(write_only=True, min_length=10)
     role = serializers.ChoiceField(choices=User.Role.choices)
-    is_authenticated = serializers.ReadOnlyField()
 
     class Meta:
         model = User
         fields = ['email', 'first_name', 'last_name',
-                  'password', 'role', 'status', 'is_authenticated']
+                  'password', 'role', 'status']
 
     def create(self, validated_data):
 
@@ -49,3 +48,29 @@ class LoginSerializer(serializers.Serializer):
 
         attrs['user'] = user
         return attrs
+
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name',
+                  'email', 'password', 'role', 'status']
+
+    def update(self, instance, validated_data):
+        # Update the instance fields with the validated data
+        instance.first_name = validated_data.get(
+            'first_name', instance.first_name)
+        instance.last_name = validated_data.get(
+            'last_name', instance.last_name)
+        instance.email = validated_data.get('email', instance.email)
+
+        instance.role = validated_data.get('role', instance.role)
+        instance.status = validated_data.get('status', instance.status)
+
+        # Hash the password
+        if 'password' in validated_data:
+            instance.set_password(validated_data['password'])
+
+        instance.save()
+
+        return instance
