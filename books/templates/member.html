@@ -1,0 +1,41 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Member Dashboard</title>
+    <link rel="stylesheet" href="{% static '/css/member.css' %}" />
+  </head>
+  <body>
+    <h1>Welcome, Member</h1>
+
+    <!-- Browse and Borrow Books Section -->
+    <section id="browse-books">
+      <h2>Browse and Borrow Books</h2>
+      <button onclick="window.location.href='/browse-books/'">
+        Browse Books
+      </button>
+      <button onclick="window.location.href='/borrow-book/'">
+        Borrow a Book
+      </button>
+    </section>
+
+    <!-- Return Books Section -->
+    <section id="return-books">
+      <h2>Return Books</h2>
+      <button onclick="window.location.href='/return-book/'">
+        Return a Book
+      </button>
+    </section>
+
+    <!-- View Borrowing History -->
+    <section id="view-borrowing-history">
+      <h2>View Borrowing History</h2>
+      <button onclick="window.location.href='/view-borrowing-history/'">
+        View Your History
+      </button>
+    </section>
+  </body>
+</html>
