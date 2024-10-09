@@ -38,10 +38,10 @@ class BookRecord(models.Model):
 
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
     member = models.ForeignKey(User, on_delete=models.CASCADE)
-    status = models.CharField(
+    action_type = models.CharField(
         max_length=10, choices=Status.choices, default=Status.BORROWED)
-    issue_date = models.DateTimeField(auto_now_add=True)
-    due_date = models.DateTimeField(null=True, blank=True)
+    issue_date = models.DateTimeField(null=True, blank=True)
+    return_date = models.DateTimeField(null=True, blank=True)
 
     def mark_as_returned(self):
         self.status = self.Status.RETURNED
