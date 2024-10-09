@@ -1,14 +1,34 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, Group, Permission
 
 # Create your models here.
 
 
-class User(models.Model):
+class User(AbstractBaseUser, PermissionsMixin):
     '''
         The User model defines the personal information and the role type
         to access specific resources in the library system
     '''
+
+    # defining a custom user schema to avoid clash between default user groups and permissions
+    groups = models.ManyToManyField(
+        Group,
+        related_name='custom_user_set',
+        blank=True,
+        help_text='The groups this user belongs to a custom user set',
+        verbose_name='groups',
+    )
+
+    user_permissions = models.ManyToManyField(
+        Permission,
+        related_name='custom_user_permissions_set',  # Change this as well
+        blank=True,
+        help_text='Specific permissions for this user.',
+        verbose_name='user permissions',
+    )
+
+    USERNAME_FIELD = 'email'
 
     class Role(models.TextChoices):
         LIBRARIAN = 'LIBRARIAN', 'librarian'
@@ -35,11 +55,12 @@ class User(models.Model):
         super(User, self).save(*args, **kwargs)
 
     @property
-    def is_authenticated(self):
-        return self.status == self.Status.ACTIVE
+    def is_librarian(self):
+        return self.role == self.Role.LIBRARIAN
 
-    def __str__(self):
-        return self.first_name + " " + self.last_name
+    @property
+    def is_member(self):
+        return self.role == self.Role.MEMBER
 
     def to_dict(self):
         return {
