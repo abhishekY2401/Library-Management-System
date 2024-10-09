@@ -1,7 +1,16 @@
 from django.urls import path
-from users.views import register_user, login_user
+from users.views import *
+
+app_name = 'users'
 
 urlpatterns = [
-    path('register/', register_user, name='register_user'),
-    path('login/', login_user, name='login_user'),
+    ## template urls ##
+    path('signup/', librarian_signup, name='librarian_signup'),
+    path('login/', user_login, name='user_login'),
+
+
+    ## api urls ##
+    path('api/register/', register_user, name='register_user'),
+    path('api/login/', login_user, name='login_user'),
+    path('api/member/add', add_member, name='add_member')
 ]

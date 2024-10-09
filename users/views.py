@@ -1,11 +1,11 @@
-
 import jwt
 import json
+from django.shortcuts import render, redirect
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
-from users.serializers import UserSignupSerializer, LoginSerializer, UserUpdateSerializer
+from users.serializers import UserSerializer, UserSignupSerializer, LoginSerializer, UserUpdateSerializer
 import logging
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.conf import settings
@@ -42,6 +42,7 @@ def register_user(request):
 @permission_classes([AllowAny])
 def login_user(request):
     try:
+        print("inside login..", request.data)
         # Instantiate the serializer with the request data
         serializer = LoginSerializer(data=request.data)
 
@@ -59,10 +60,12 @@ def login_user(request):
             #     'access_token': jwt_token,
             # }, status=status.HTTP_200_OK)
             refresh = RefreshToken.for_user(user)
+            print(user.to_dict()['role'])
 
             return Response({
                 'access_token': str(refresh.access_token),
-                'refresh_token': str(refresh)
+                'refresh_token': str(refresh),
+                'user': user.to_dict()['role']
             }, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -156,3 +159,41 @@ def remove_member(request):
 
     except Exception as error:
         return Response(error, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsLibrarian])
+def view_all_members():
+    try:
+        members = User.objects.filter(role=User.Role.MEMBER)
+        serializer = UserSerializer(members, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# Member related operation
+
+
+@api_view(['DELETE'])
+def delete_account(request):
+    try:
+        user = request.user[1]['user_id']
+        user.delete()
+
+        return Response({"message": "Account deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+### Template Views ####
+
+def librarian_signup(request):
+    return render(request, 'signup_librarian.html')
+
+
+def user_login(request):
+    return render(request, 'login.html')
