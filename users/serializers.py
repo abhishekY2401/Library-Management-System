@@ -3,6 +3,13 @@ from django.contrib.auth.hashers import check_password
 from users.models import User
 
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['email', 'first_name', 'last_name',
+                  'password', 'role', 'status']
+
+
 class UserSignupSerializer(serializers.ModelSerializer):
 
     # define all the user fields to validate the user data
