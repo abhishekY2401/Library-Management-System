@@ -1,0 +1,41 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Librarian Signup</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+    <!-- Link your CSS file here -->
+  </head>
+  <body>
+    <h1>Librarian Signup</h1>
+    <form
+      id="signupForm"
+      action="{% url 'users:register_user' %}"
+      method="POST"
+    >
+      {% csrf_token %}
+
+      <label for="first_name">First Name:</label>
+      <input type="text" id="first_name" required /><br />
+
+      <label for="last_name">Last Name:</label>
+      <input type="text" id="last_name" required /><br />
+
+      <label for="email">Email:</label>
+      <input type="email" id="email" required /><br />
+
+      <label for="password">Password:</label>
+      <input type="password" id="password" required /><br />
+
+      <label for="role">Role:</label>
+      <input type="text" id="role" value="LIBRARIAN" readonly /><br />
+
+      <button type="submit">Signup</button>
+    </form>
+
+    <!-- Link your JavaScript file here -->
+  </body>
+</html>
