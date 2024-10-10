@@ -150,6 +150,7 @@ STATICFILES_DIRS = (
 
 STATIC_ROOT = 'staticfiles'
 STATIC_URL = '/static/'
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
 MEDIA_URL = '/images/'
 # Default primary key field type
