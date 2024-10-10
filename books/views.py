@@ -1,10 +1,12 @@
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from django.contrib.auth.decorators import login_required
 from books.models import Book, BookRecord
 from users.models import User
 from books.serializers import BookSerializer, BookRecordSerializer, BookUpdateSerializer
 from users.serializers import UserSerializer
+from rest_framework.permissions import IsAuthenticated
 from books.permissions import IsLibrarian
 from datetime import datetime, timezone
 from django.shortcuts import render
@@ -105,10 +107,11 @@ def view_all_members_records():
 
 
 @api_view(['POST'])
-def borrow_book(request):
+def borrow_book(request, id):
     # get the user id and book id for creating a book record of BORROWED status
-    member_id = request.data.get('user_id')
-    book_id = request.data.get('book_id')
+    print(request)
+    member_id = request.user
+    book_id = id
     return_date = request.data.get('return_date')
 
     try:
@@ -143,10 +146,10 @@ def borrow_book(request):
 
 
 @api_view(['POST'])
-def return_book(request):
+def return_book(request, id):
     # get the user id and book id for creating a book record of BORROWED status
-    member_id = request.data.get('user_id')
-    book_id = request.data.get('book_id')
+    member_id = request.user
+    book_id = id
 
     try:
         # now fetch the user and the book data by its corresponding id
@@ -229,5 +232,23 @@ def librarian_home(request):
     return render(request, 'librarian.html', context={"books": book_serializer.data, "members": member_serializer.data, "records": record_serializer.data})
 
 
+@permission_classes([IsAuthenticated])
 def member_home(request):
-    return render(request, 'member.html')
+    try:
+
+        books = Book.objects.all()
+        book_serializer = BookSerializer(books, many=True)
+
+        # records = BookRecord.objects.filter(member=member_id)
+        # record_serializer = BookRecordSerializer(records, many=True)
+
+    except User.DoesNotExist:
+        return Response("No User exists in the library", status=status.HTTP_404_NOT_FOUND)
+
+    except BookRecord.DoesNotExist:
+        return Response("Record not found in library", status=status.HTTP_404_NOT_FOUND)
+
+    return render(request, 'member.html', context={
+        'books': book_serializer.data,
+        # "records": record_serializer.data
+    })

@@ -15,6 +15,6 @@ urlpatterns = [
     path('api/books/<int:id>/update/', update_book, name='update_book'),
     path('api/books/<int:id>/remove/', remove_book, name='remove_book'),
 
-    path('api/books/borrow', borrow_book, name='borrow_book'),
-    path('api/books/return', return_book, name='return_book')
+    path('api/books/<int:id>/borrow', borrow_book, name='borrow_book'),
+    path('api/books/<int:id>/return', return_book, name='return_book')
 ]

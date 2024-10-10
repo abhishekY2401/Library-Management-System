@@ -22,20 +22,24 @@ logger = logging.getLogger(__name__)
 @permission_classes([AllowAny])
 def register_user(request):
     try:
-        logging.info("starting to extract user data in serializer..")
+        print("Starting to extract user data in serializer..")
 
         user_serializer = UserSignupSerializer(data=request.data)
 
         if user_serializer.is_valid():
-            logging.info("user data validated successfully")
+            print("User data validated successfully")
             user = user_serializer.save()
 
-            logging.info(f"user created successfully: {user}")
-            return Response({"message": "User created successfully", "user": user.to_dict()}, status=status.HTTP_201_CREATED)
+            print(f"User created successfully: {user}")
+            return Response({"message": "Successfully created user"}, status=status.HTTP_201_CREATED)
+
+        # In case the data is not valid
+        print("User data validation failed")
+        return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     except Exception as error:
         logging.error(f"Error while creating user: {error}")
-        return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['POST'])

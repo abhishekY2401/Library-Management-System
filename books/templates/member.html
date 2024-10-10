@@ -13,29 +13,42 @@
 
     <!-- Browse and Borrow Books Section -->
     <section id="browse-books">
-      <h2>Browse and Borrow Books</h2>
-      <button onclick="window.location.href='/browse-books/'">
-        Browse Books
-      </button>
-      <button onclick="window.location.href='/borrow-book/'">
-        Borrow a Book
-      </button>
+      <h2>All Books</h2>
+      <div class="book-list">
+        <!-- Placeholder for displaying books -->
+        {% for book in books %}
+        <div class="book-card">
+          <h3>{{ book.title }}</h3>
+          <p>Author: {{ book.author }}</p>
+          <p>Status: {{ book.status }}</p>
+          <button onclick="borrowBook({{ book.id }})" {% if book.status != 'Available' %} disabled {% endif %}>
+            Borrow
+          </button>
+          <button onclick="returnBook({{ book.id }})" {% if book.status == 'Available' %} disabled {% endif %}>
+            Return
+          </button>
+        </div>
+        {% endfor %}
+      </div>
     </section>
 
-    <!-- Return Books Section -->
-    <section id="return-books">
-      <h2>Return Books</h2>
-      <button onclick="window.location.href='/return-book/'">
-        Return a Book
-      </button>
+    <!-- View Member History -->
+    <section id="member-history">
+      <h2>View Your Borrowing History</h2>
+      <button onclick="openMemberHistoryModal()">View History</button>
     </section>
 
-    <!-- View Borrowing History -->
-    <section id="view-borrowing-history">
-      <h2>View Borrowing History</h2>
-      <button onclick="window.location.href='/view-borrowing-history/'">
-        View Your History
-      </button>
-    </section>
+    <!-- Member History Modal -->
+    <div id="memberHistoryModal" class="modal">
+      <div class="modal-content">
+        <span class="close-button" onclick="closeMemberHistoryModal()">&times;</span>
+        <h2>Member History</h2>
+        <div id="memberHistoryContent">
+          <!-- Member history will be dynamically populated here -->
+        </div>
+      </div>
+    </div>
+
+    <script src="{% static '/js/member.js' %}"></script>
   </body>
 </html>
