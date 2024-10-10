@@ -6,36 +6,70 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Librarian Signup</title>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+    <link rel="stylesheet" href="{% static '/css/style.css' %}" />
     <!-- Link your CSS file here -->
   </head>
   <body>
     <h1>Librarian Signup</h1>
-    <form
-      id="signupForm"
-      action="{% url 'users:register_user' %}"
-      method="POST"
-    >
+    <form id="signupForm" onsubmit="registerUser(event)">
       {% csrf_token %}
 
       <label for="first_name">First Name:</label>
-      <input type="text" id="first_name" required /><br />
+      <input type="text" id="first_name" name="first_name" required /><br />
 
       <label for="last_name">Last Name:</label>
-      <input type="text" id="last_name" required /><br />
+      <input type="text" id="last_name" name="last_name" required /><br />
 
       <label for="email">Email:</label>
-      <input type="email" id="email" required /><br />
+      <input type="email" id="email" name="email" required /><br />
 
       <label for="password">Password:</label>
-      <input type="password" id="password" required /><br />
+      <input type="password" id="password" name="password" required /><br />
 
       <label for="role">Role:</label>
-      <input type="text" id="role" value="LIBRARIAN" readonly /><br />
+      <input
+        type="text"
+        id="role"
+        value="LIBRARIAN"
+        name="role"
+        readonly
+      /><br />
 
       <button type="submit">Signup</button>
     </form>
 
-    <!-- Link your JavaScript file here -->
+    <script>
+      function registerUser(event) {
+        event.preventDefault();
+
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        const first_name = document.getElementById("first_name").value;
+        const last_name = document.getElementById("last_name").value;
+        const role = document.getElementById("role").value;
+
+        fetch("/api/register/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            first_name,
+            last_name,
+            email,
+            password,
+            role,
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            window.location.href = "/login/";
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            alert("An error occurred while trying to register .");
+          });
+      }
+    </script>
   </body>
 </html>

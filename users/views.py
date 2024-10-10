@@ -23,8 +23,10 @@ logger = logging.getLogger(__name__)
 def register_user(request):
     try:
         print("Starting to extract user data in serializer..")
+        print(request.data)
 
         user_serializer = UserSignupSerializer(data=request.data)
+        print(user_serializer)
 
         if user_serializer.is_valid():
             print("User data validated successfully")

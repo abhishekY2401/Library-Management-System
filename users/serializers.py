@@ -16,7 +16,7 @@ class UserSignupSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(max_length=255)
     first_name = serializers.CharField(max_length=50)
     last_name = serializers.CharField(max_length=50)
-    password = serializers.CharField(write_only=True, min_length=10)
+    password = serializers.CharField(min_length=10)
     role = serializers.ChoiceField(choices=User.Role.choices)
 
     class Meta:
