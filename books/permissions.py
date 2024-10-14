@@ -21,8 +21,11 @@ class IsLibrarian(BasePermission):
             if 'user_id' in token_data:
                 # Fetch the user from the database
                 user = User.objects.get(id=token_data['user_id'])
-                # Check if the user's role is LIBRARIAN
-                print(f"User Role: {user.role}")
-                return user.role == User.Role.LIBRARIAN
 
-        return False
+        elif isinstance(request.user, User):
+            email = request.user
+            user = User.objects.get(email=email)
+        else:
+            return False
+
+        return user.role == User.Role.LIBRARIAN
