@@ -1,9 +1,5 @@
-
-from users.models import User
 from rest_framework.permissions import BasePermission
-
-
-# User = get_user_model()
+from users.models import User
 
 
 class IsAuthenticated(BasePermission):
@@ -12,13 +8,26 @@ class IsAuthenticated(BasePermission):
     """
 
     def has_permission(self, request, view):
-        print(request.user[0])
+        print(f"Request User: {request.user}")
 
-        user_id = User.objects.get(email=request.user[0]).to_dict()['id']
+        if isinstance(request.user, tuple) and len(request.user) == 2:
+            user, token_data = request.user
 
-        print("user_id: ", user_id)
+            print(f"Token Data: {token_data}")
 
-        if user_id == request.user[1]['user_id']:
-            return True
+            # Ensure the token_data contains 'user_id'
+            if 'user_id' in token_data:
+                # Fetch the user from the database
+                try:
+                    user = User.objects.get(id=token_data['user_id'])
+                except User.DoesNotExist:
+                    return False
 
-        return False
+        elif isinstance(request.user, User):
+            email = request.user
+            user = User.objects.get(email=email)
+        else:
+            return False
+
+        # Check if the user is authenticated by ensuring the user's status is ACTIVE
+        return user.status == User.Status.ACTIVE
