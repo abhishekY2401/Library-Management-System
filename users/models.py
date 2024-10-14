@@ -55,12 +55,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         super(User, self).save(*args, **kwargs)
 
     @property
-    def is_librarian(self):
-        return self.role == self.Role.LIBRARIAN
-
-    @property
-    def is_member(self):
-        return self.role == self.Role.MEMBER
+    def is_authenticated(self):
+        return True
 
     def to_dict(self):
         return {

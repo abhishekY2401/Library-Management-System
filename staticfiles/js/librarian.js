@@ -23,43 +23,8 @@ window.onclick = function (event) {
   }
 };
 
-function addNewBook(event) {
-  event.preventDefault(); // Prevent the default form submission
-
-  const token = sessionStorage.getItem("access_token");
-
-  const newBookData = {
-    title: document.getElementById("newBookTitle").value,
-    author: document.getElementById("newBookAuthor").value,
-    category: document.getElementById("newBookCategory").value,
-    description: document.getElementById("newBookDescription").value,
-    isbn: document.getElementById("newBookISBN").value,
-    status: document.getElementById("newBookStatus").value,
-  };
-
-  fetch(`/api/books/add/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(newBookData),
-  })
-    .then((response) => {
-      if (response.ok) {
-        location.reload(); // Reload the page after successful addition
-      } else {
-        return response.json().then((error) => {
-          console.error("Error:", error);
-          alert("Failed to add the book. Please try again."); // Example error handling
-        });
-      }
-    })
-    .catch((error) => console.error("Error:", error));
-}
-
 function addNewMember(event) {
-  event.preventDefault(); // Prevent the default form submission
+  event.preventDefault();
 
   const newMemberData = {
     first_name: document.getElementById("first_name").value,
@@ -93,6 +58,41 @@ function addNewMember(event) {
     .catch((error) => {
       console.error("Error:", error);
     });
+}
+
+function addNewBook(event) {
+  event.preventDefault(); // Prevent the default form submission
+
+  const token = sessionStorage.getItem("access_token");
+
+  const newBookData = {
+    title: document.getElementById("newBookTitle").value,
+    author: document.getElementById("newBookAuthor").value,
+    category: document.getElementById("newBookCategory").value,
+    description: document.getElementById("newBookDescription").value,
+    isbn: document.getElementById("newBookISBN").value,
+    status: document.getElementById("newBookStatus").value,
+  };
+
+  fetch(`/api/books/add/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(newBookData),
+  })
+    .then((response) => {
+      if (response.ok) {
+        location.reload(); // Reload the page after successful addition
+      } else {
+        return response.json().then((error) => {
+          console.error("Error:", error);
+          alert("Failed to add the book. Please try again."); // Example error handling
+        });
+      }
+    })
+    .catch((error) => console.error("Error:", error));
 }
 
 function openUpdateModal(bookId) {
@@ -213,4 +213,33 @@ function openMemberHistoryModal(records) {
 
 function closeMemberHistoryModal() {
   document.getElementById("memberHistoryModal").style.display = "none";
+}
+
+function logout() {
+  const access_token = sessionStorage.getItem("access_token");
+  const refresh_token = sessionStorage.getItem("refresh_token");
+
+  fetch("/api/logout/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${access_token}`,
+    },
+    body: JSON.stringify({ refresh: refresh_token }),
+  })
+    .then((response) => {
+      if (response.ok) {
+        // Clear tokens from storage
+        sessionStorage.removeItem("access_token");
+        sessionStorage.removeItem("refresh_token");
+        // Redirect to login page
+        window.location.href = "/login/";
+      } else {
+        alert("Failed to logout. Please try again.");
+      }
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      alert("An error occurred while logging out.");
+    });
 }

@@ -214,3 +214,32 @@ function openMemberHistoryModal(records) {
 function closeMemberHistoryModal() {
   document.getElementById("memberHistoryModal").style.display = "none";
 }
+
+function logout() {
+  const access_token = sessionStorage.getItem("access_token");
+  const refresh_token = sessionStorage.getItem("refresh_token");
+
+  fetch("/api/logout/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${access_token}`,
+    },
+    body: JSON.stringify({ refresh: refresh_token }),
+  })
+    .then((response) => {
+      if (response.ok) {
+        // Clear tokens from storage
+        sessionStorage.removeItem("access_token");
+        sessionStorage.removeItem("refresh_token");
+        // Redirect to login page
+        window.location.href = "/login/";
+      } else {
+        alert("Failed to logout. Please try again.");
+      }
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      alert("An error occurred while logging out.");
+    });
+}

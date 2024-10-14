@@ -7,7 +7,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from users.serializers import UserSerializer, UserSignupSerializer, LoginSerializer, UserUpdateSerializer
 import logging
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
+from users.authentication import IsAuthenticated
 from django.conf import settings
 from datetime import datetime, timezone, timedelta
 from books.permissions import IsLibrarian
@@ -56,22 +57,14 @@ def login_user(request):
         if serializer.is_valid():
             user = serializer.validated_data['user']
             print("id: ", user.id)
-            # payload = {
-            #     'id': user.id,
-            #     'exp': datetime.now(timezone.utc) + timedelta(hours=1)
-            # }
-            # jwt_token = jwt.encode(payload, settings.SECRET_KEY)
 
-            # return Response({
-            #     'access_token': jwt_token,
-            # }, status=status.HTTP_200_OK)
             refresh = RefreshToken.for_user(user)
-            print(user.to_dict()['role'])
+            user_serializer = UserSerializer(user)
 
             return Response({
                 'access_token': str(refresh.access_token),
                 'refresh_token': str(refresh),
-                'user': user.to_dict()['role']
+                'user': user_serializer.data
             }, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -85,12 +78,16 @@ def login_user(request):
 @permission_classes([IsAuthenticated])
 def logout_user(request):
     try:
-        refresh_token = request.data["refresh"]
+        print(f"request.user: {request.user}")
+        refresh_token = request.data.get("refresh")
+        if not refresh_token:
+            return Response({"detail": "Refresh token is required."}, status=status.HTTP_400_BAD_REQUEST)
+
         token = RefreshToken(refresh_token)
         token.blacklist()
         return Response(status=status.HTTP_205_RESET_CONTENT)
     except Exception as e:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
