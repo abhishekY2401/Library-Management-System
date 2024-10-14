@@ -23,6 +23,43 @@ window.onclick = function (event) {
   }
 };
 
+function addNewMember(event) {
+  event.preventDefault();
+
+  const newMemberData = {
+    first_name: document.getElementById("first_name").value,
+    last_name: document.getElementById("last_name").value,
+    email: document.getElementById("email").value,
+    password: document.getElementById("password").value,
+    role: "MEMBER",
+  };
+
+  const token = sessionStorage.getItem("access_token");
+
+  fetch("/api/member/add/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(newMemberData),
+  })
+    .then((response) => {
+      if (response.ok) {
+        return response.json();
+      } else {
+        throw new Error("Failed to add new member");
+      }
+    })
+    .then((data) => {
+      console.log("Member added successfully:", data);
+      closeAddMemberModal(); // Close the modal after success
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+    });
+}
+
 function addNewBook(event) {
   event.preventDefault(); // Prevent the default form submission
 
@@ -56,44 +93,6 @@ function addNewBook(event) {
       }
     })
     .catch((error) => console.error("Error:", error));
-}
-
-function addNewMember(event) {
-  event.preventDefault(); // Prevent the default form submission
-
-  const formData = new FormData(document.getElementById("addMemberForm"));
-  const data = {
-    first_name: formData.get("firstName"),
-    last_name: formData.get("lastName"),
-    email: formData.get("email"),
-    password: formData.get("password"),
-    role: formData.get("role"),
-  };
-
-  const token = sessionStorage.getItem("access_token");
-
-  fetch("/api/books/add/", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(data),
-  })
-    .then((response) => {
-      if (response.ok) {
-        return response.json();
-      } else {
-        throw new Error("Failed to add new member");
-      }
-    })
-    .then((data) => {
-      console.log("Member added successfully:", data);
-      closeAddMemberModal(); // Close the modal after success
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-    });
 }
 
 function openUpdateModal(bookId) {

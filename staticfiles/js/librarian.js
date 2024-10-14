@@ -61,24 +61,23 @@ function addNewBook(event) {
 function addNewMember(event) {
   event.preventDefault(); // Prevent the default form submission
 
-  const formData = new FormData(document.getElementById("addMemberForm"));
-  const data = {
-    first_name: formData.get("firstName"),
-    last_name: formData.get("lastName"),
-    email: formData.get("email"),
-    password: formData.get("password"),
-    role: formData.get("role"),
+  const newMemberData = {
+    first_name: document.getElementById("first_name").value,
+    last_name: document.getElementById("last_name").value,
+    email: document.getElementById("email").value,
+    password: document.getElementById("password").value,
+    role: "MEMBER",
   };
 
   const token = sessionStorage.getItem("access_token");
 
-  fetch("/api/books/add/", {
+  fetch("/api/member/add/", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(newMemberData),
   })
     .then((response) => {
       if (response.ok) {
