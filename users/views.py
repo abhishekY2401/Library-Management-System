@@ -203,3 +203,7 @@ def librarian_signup(request):
 
 def user_login(request):
     return render(request, 'login.html')
+
+
+def homepage(request):
+    return render(request, 'homepage.html')

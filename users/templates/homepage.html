@@ -1,0 +1,32 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Library Management System</title>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{% static '/css/homepage.css' %}"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Welcome to the Library Management System</h1>
+        <p>
+          Efficiently manage your library with our user-friendly platform.
+          Whether you're a librarian managing resources or a member looking to
+          explore books, we have you covered!
+        </p>
+      </header>
+      <div class="button-container">
+        <a href="/login" class="button">Login as Librarian</a>
+        <a href="/login" class="button">Login as Member</a>
+        <a href="/signup" class="button signup">Sign Up (Librarian Only)</a>
+      </div>
+    </div>
+  </body>
+</html>
